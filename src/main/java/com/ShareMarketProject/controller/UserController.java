@@ -3,6 +3,7 @@ package com.ShareMarketProject.controller;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ShareMarketProject.Exception.ErrorResponse;
 import com.ShareMarketProject.dto.LoginDto;
+import com.ShareMarketProject.entity.Shares;
 import com.ShareMarketProject.entity.UserProfile;
 import com.ShareMarketProject.repo.UserRepo;
 import com.ShareMarketProject.service.UserService;
@@ -29,14 +32,13 @@ public class UserController {
 	UserService service;
 
 	@PostMapping("/user/profile")
-    public ResponseEntity<UserProfile> createUserProfile(@RequestBody UserProfile profile){
-    	UserProfile createUserProfile = null;
-    	if(userRepo.findById(profile.getEmail()) == null) {
-    		 createUserProfile = service.createUserProfile(profile);
-    	}
-    	else 
-    		return  null;
-    return new ResponseEntity<UserProfile> (createUserProfile,HttpStatus.OK);
+    public ResponseEntity<?> createUserProfile(@RequestBody UserProfile profile){
+		if (userRepo.existsById(profile.getEmail())) {
+            return new ResponseEntity<>(new ErrorResponse("User profile already exists."), HttpStatus.CONFLICT);
+        }
+        UserProfile createdUserProfile = service.createUserProfile(profile);
+        return new ResponseEntity<>(createdUserProfile, HttpStatus.CREATED);
+ 
    }
 	@PostMapping("/update/profile/{email}")
 	public ResponseEntity<UserProfile> updateUserProfile(@RequestBody UserProfile profile,@PathVariable String email){
@@ -74,4 +76,14 @@ public class UserController {
 		 }
 	
    }
+	// Example method to add shares to a user
+	@PostMapping("/addshares")
+	public void addSharesToUser(String userName, Set<Shares> shares) {
+	    UserProfile user = userRepo.findById(userName).orElseThrow(() -> new RuntimeException("User not found"));
+	    user.getShares().addAll(shares);
+	    userRepo.save(user);
+	}
+
+	
+	
 }

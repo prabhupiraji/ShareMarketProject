@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ShareMarketProject.entity.CompanyDetails;
 import com.ShareMarketProject.service.CompanyDetailsService;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
 @RestController
@@ -38,7 +39,7 @@ public class CompanyDetailsController {
        }
        @PutMapping("/companydetails/update/{cmpId}")
        public ResponseEntity<?> updateCompanyDetails(
-               @Validated @RequestBody CompanyDetails companyDetails,
+               @Valid @RequestBody CompanyDetails companyDetails,
                @PathVariable @Positive(message = "Company ID must be a positive integer") int cmpId) {
            try {
                logger.info("Request to update company details for ID {}: {}", cmpId, companyDetails);

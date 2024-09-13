@@ -1,16 +1,24 @@
 package com.ShareMarketProject.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.validation.constraints.Positive;
 
 @Entity
 public class Shares {
 	@Id
 	private int sharesId;
+	@Positive(message="quanity must be greater then zero")
 	private int quantity;
 	private double price;
+	private double totalPrice;
 //	private CompanyDetails companyDetails;
-	
+	 @ManyToMany(mappedBy = "shares")
+	    private Set<UserProfile> shares = new HashSet<>();
 	
 	public Shares() {
 		super();
@@ -18,13 +26,21 @@ public class Shares {
 	}
 
 
-	public Shares(int sharesId, int quantity, double price, CompanyDetails companyDetails) {
+	
+
+
+	public Shares(int sharesId, @Positive(message = "quanity must be greater then zero") int quantity, double price,
+			double totalPrice, Set<UserProfile> shares) {
 		super();
 		this.sharesId = sharesId;
 		this.quantity = quantity;
 		this.price = price;
-//		this.companyDetails = companyDetails;
+		this.totalPrice = totalPrice;
+		this.shares = shares;
 	}
+
+
+
 
 
 	public int getSharesId() {
@@ -54,6 +70,26 @@ public class Shares {
 
 	public void setPrice(double price) {
 		this.price = price;
+	}
+
+
+	public double getTotalPrice() {
+		return totalPrice;
+	}
+
+
+	public void setTotalPrice(double totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+
+	public Set<UserProfile> getUsers() {
+		return shares;
+	}
+
+
+	public void setUsers(Set<UserProfile> users) {
+		this.shares = shares;
 	}
 
 

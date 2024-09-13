@@ -1,8 +1,11 @@
 package com.ShareMarketProject.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ShareMarketProject.entity.Shares;
 import com.ShareMarketProject.entity.UserProfile;
 import com.ShareMarketProject.repo.UserRepo;
 
@@ -22,7 +25,12 @@ public class UserService {
 		UserProfile updatedProfile = userRepo.save(profile);
 		return updatedProfile;
 	}
-	
+
+	public Optional<UserProfile> findById(String userName) {
+		// TODO Auto-generated method stub
+		return userRepo.findById(userName);
+	}
+	 
 	
 
 }
