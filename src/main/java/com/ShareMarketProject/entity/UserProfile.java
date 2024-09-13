@@ -1,7 +1,12 @@
 package com.ShareMarketProject.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 public class UserProfile {
@@ -12,20 +17,33 @@ public class UserProfile {
 	private int age;
 	private String password;
 	
+	@ManyToMany
+    @JoinTable(
+        name = "user_shares",
+        joinColumns = @jakarta.persistence.JoinColumn(name = "userName"),
+        inverseJoinColumns = @jakarta.persistence.JoinColumn(name = "sharesId")
+    )
+    private Set<Shares> shares = new HashSet<>();
+	
 	public UserProfile() {
 		super();
 
 	}
 
-	public UserProfile(String userName, String email, Long mobileNo, int age, String password) {
 	
+	
+	public UserProfile(String userName, String email, Long mobileNo, int age, String password, Set<Shares> shares) {
+		super();
 		this.userName = userName;
 		this.email = email;
 		this.mobileNo = mobileNo;
 		this.age = age;
-		this.password=password;
+		this.password = password;
+		this.shares = shares;
 	}
-	
+
+
+
 	public String getUserName() {
 		return userName;
 	}
@@ -58,7 +76,18 @@ public class UserProfile {
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+
+
+	public Set<Shares> getShares() {
+		return shares;
+	}
+
+
+
+	public void setShares(Set<Shares> shares) {
+		this.shares = shares;
+	}
 	
-	
-	
+
 }

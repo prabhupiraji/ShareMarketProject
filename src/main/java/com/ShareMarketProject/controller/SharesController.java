@@ -1,71 +1,59 @@
 package com.ShareMarketProject.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ShareMarketProject.Exception.GlobalExceptionHandler;
-import com.ShareMarketProject.Exception.InvalidSharesException;
-import com.ShareMarketProject.Exception.SharesNotAvailableException;
 import com.ShareMarketProject.entity.Shares;
+import com.ShareMarketProject.entity.UserProfile;
 import com.ShareMarketProject.service.SharesService;
+import com.ShareMarketProject.service.UserService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/shares")
 public class SharesController {
-      @Autowired
-	  SharesService sharesService;
-	  
-		private static final Logger logger = LoggerFactory.getLogger(SharesController.class);
-      @PostMapping("/user/buyshares")
-      public ResponseEntity<?> buyShares(@Validated @RequestBody Shares shares) {
-          try {
-              logger.info("Request to buy shares received: {}", shares);
-              Shares purchasedShares = sharesService.buyShares(shares);
-              return new ResponseEntity<>(purchasedShares, HttpStatus.OK);
-          } catch (InvalidSharesException e) {
-              logger.error("Invalid shares request: {}", shares, e);
-              return new ResponseEntity<>("Invalid shares request", HttpStatus.BAD_REQUEST);
-          } catch (SharesNotAvailableException e) {
-              logger.error("Shares not available: {}", shares, e);
-              return new ResponseEntity<>("Shares not available", HttpStatus.NOT_FOUND);
-          } catch (Exception e) {
-              logger.error("An unexpected error occurred: ", e);
-              return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
-          }
-      }
-      @ExceptionHandler(Exception.class)
-      public ResponseEntity<String> handleException(Exception e) {
-          logger.error("Global exception handler: ", e);
-          return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-      
-      @DeleteMapping("/user/sellshares")
-      public ResponseEntity<?> sellShares(@RequestBody Shares shares){
-    	  
-		try {
-            logger.info("Request to sell shares received: {}", shares);
-            Shares selledShares = sharesService.sellShares(shares);
-        	return new ResponseEntity<Shares>(selledShares,HttpStatus.OK);
-        } catch (InvalidSharesException e) {
-            logger.error("Invalid shares sell request: {}", shares, e);
-            return new ResponseEntity<>("Invalid shares request", HttpStatus.BAD_REQUEST);
-        } catch (SharesNotAvailableException e) {
-            logger.error("Shares not available: {}", shares, e);
-            return new ResponseEntity<>("Shares not available", HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            logger.error("An unexpected error occurred: ", e);
-            return new ResponseEntity<>("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+
+    @Autowired
+    private SharesService sharesService;
+
+    @Autowired
+    private UserService userService;
+
+    // Endpoint to buy shares
+    @PostMapping("/buy")
+    public ResponseEntity<String> buyShares(@RequestParam String userName, @RequestParam int sharesId, @RequestParam int quantity) {
+        Optional<UserProfile> userProfile = userService.findById(userName);
+        Optional<Shares> shares = sharesService.findById(sharesId);
+
+        if (userProfile.isPresent() && shares.isPresent()) {
+            boolean success = sharesService.buyShares(userProfile.get(), shares.get(), quantity);
+            if (success) {
+                return ResponseEntity.ok("Shares bought successfully.");
+            } else {
+                return ResponseEntity.badRequest().body("Not enough shares available.");
+            }
+        } else {
+            return ResponseEntity.notFound().build();
         }
-      }
+    }
+
+    // Endpoint to sell shares
+    @PostMapping("/sell")
+    public ResponseEntity<String> sellShares(@RequestParam String userName, @RequestParam int sharesId, @RequestParam int quantity) {
+        Optional<UserProfile> userProfile = userService.findById(userName);
+        Optional<Shares> shares = sharesService.findById(sharesId);
+
+        if (userProfile.isPresent() && shares.isPresent()) {
+            boolean success = sharesService.sellShares(userProfile.get(), shares.get(), quantity);
+            if (success) {
+                return ResponseEntity.ok("Shares sold successfully.");
+            } else {
+                return ResponseEntity.badRequest().body("Insufficient shares to sell.");
+            }
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
